@@ -16,12 +16,17 @@
 #pragma once
 
 #include "gui/dialogs/modal_dialog.hpp"
+#include "help/help_impl.hpp"
 #include <map>
 
 class config;
 class game_config_view;
 
-namespace gui2::dialogs
+namespace gui2
+{
+class tree_view_node;
+
+namespace dialogs
 {
 
 /** Help browser dialog. */
@@ -43,7 +48,10 @@ private:
 
 	void on_topic_select();
 
-	void add_topic(const std::string& topic_id, const std::string& topic_title, bool expands, class tree_view_node* parent = nullptr);
+	void add_topics_for_section(const help::section& parent_section, tree_view_node& parent_node);
+	tree_view_node& add_topic(const std::string& topic_id, const std::string& topic_title,
+			bool expands, tree_view_node& parent);
 };
 
 } // namespace dialogs
+} // namespace gui2

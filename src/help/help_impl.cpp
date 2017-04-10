@@ -255,8 +255,7 @@ void parse_config_internal(const config *help_cfg, const config *section_cfg,
 		  throw parse_error(ss.str());
 		}
 
-		std::vector<topic> generated_topics =
-		generate_topics(sort_generated,(*section_cfg)["generator"]);
+		std::vector<topic> generated_topics = generate_topics(sort_generated,(*section_cfg)["generator"]);
 
 		const std::vector<std::string> topics_id = utils::quoted_split((*section_cfg)["topics"]);
 		std::vector<topic> topics;
@@ -266,7 +265,7 @@ void parse_config_internal(const config *help_cfg, const config *section_cfg,
 			if (const config &topic_cfg = help_cfg->find_child("topic", "id", *it))
 			{
 				std::string text = topic_cfg["text"];
-				text += generate_topic_text(topic_cfg["generator"], help_cfg, sec, generated_topics);
+				text += generate_topic_text(topic_cfg["generator"], help_cfg, sec);
 				topic child_topic(topic_cfg["title"], topic_cfg["id"], text);
 				if (!is_valid_id(child_topic.id)) {
 					std::stringstream ss;
@@ -358,7 +357,7 @@ void generate_sections(const config *help_cfg, const std::string &generator, sec
 	}
 }
 
-std::string generate_topic_text(const std::string &generator, const config *help_cfg, const section &sec, const std::vector<topic>& generated_topics)
+std::string generate_topic_text(const std::string &generator, const config *help_cfg, const section &sec)
 {
 	std::string empty_string = "";
 	if (generator.empty()) {
@@ -367,7 +366,7 @@ std::string generate_topic_text(const std::string &generator, const config *help
 		std::vector<std::string> parts = utils::split(generator, ':');
 		if (parts.size() > 1 && parts[0] == "contents") {
 			if (parts[1] == "generated") {
-				return generate_contents_links(sec, generated_topics);
+				return generate_contents_links(sec);
 			} else {
 				return generate_contents_links(parts[1], help_cfg);
 			}
@@ -1217,7 +1216,7 @@ std::string generate_contents_links(const std::string& section_name, config cons
 		return res.str();
 }
 
-std::string generate_contents_links(const section &sec, const std::vector<topic>& topics)
+std::string generate_contents_links(const section &sec)
 {
 		std::stringstream res;
 
@@ -1228,7 +1227,7 @@ std::string generate_contents_links(const section &sec, const std::vector<topic>
 			}
 		}
 
-		for (auto &t : topics) {
+		for(const topic& t : sec.topics) {
 			if (is_visible_id(t.id)) {
 				std::string link = make_link(t.title, t.id);
 				res << font::unicode_bullet << " " << link << "\n";

@@ -18,10 +18,15 @@ end
 ---@param right? string right quote characters
 ---@return string[]
 function stringx.quoted_split(str, sep, left, right)
-	right = right or left
-	if left == nil and right == nil then
-		left = '('
-		right = ')'
+	if left == nil then
+		if right == nil then
+			left = '('
+			right = ')'
+		else
+			left = right
+		end
+	elseif right == nil then
+		right = left
 	end
 	return stringx.split(str, sep, {quote_left = left, quote_right = right, strip_spaces = true, remove_empty = true})
 end

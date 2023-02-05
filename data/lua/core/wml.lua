@@ -1,4 +1,5 @@
 --[========[Config Manipulation Functions]========]
+---@diagnostic disable: deprecated
 print("Loading WML module...")
 
 local function ensure_config(cfg)
@@ -65,14 +66,13 @@ end
 ---@return integer? #The overall index of the child tag
 function wml.find_child(cfg, name, filter)
 	ensure_config(cfg)
-	if filter == nil then
+	if filter == nil and type(name) == 'table' then
 		filter = name
 		name = nil
 	end
 	for i,v in ipairs(cfg) do
-		if name == nil or v[1] == name then
-			local w = v[2]
-			if wml.matches_filter(w, filter) then return w, i end
+		if name == nil or v.tag == name then
+			if wml.matches_filter(v.contents, filter) then return v.contents, i end
 		end
 	end
 end
@@ -436,7 +436,6 @@ if wesnoth.kernel_type() ~= "Application Lua Kernel" then
 	---@param var string Name of the variable to store
 	---@param t WML[] An array of WML tables
 	---@param context? WMLVariableContext Where to store the variable
-	---@return WML[] #A table containing all the variables (starting at index 1)
 	function wml.array_access.set(var, t, context)
 		context = resolve_variable_context(context, "set_variable_array")
 		context.set(var)

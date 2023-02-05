@@ -247,13 +247,13 @@ end
 
 -- convert all 'veteran' units from side 2 to the more aggressive side 1
 -- this must happen before the new units are created from spawns.
-on_event("new turn", function()
+on_event("new turn", function(_)
 	for i, unit in ipairs(wesnoth.units.find_on_map { side = 2 }) do
 		unit.side = 1
 	end
 end)
 
-on_event("prestart", function()
+on_event("prestart", function(_)
 	local leaders = wesnoth.units.find_on_map { side = "3,4", canrecruit= true}
 	if #leaders < 2 then
 		--create_timed_spawns(5, 11, 50, 5, 4, 21)
@@ -267,7 +267,7 @@ end)
 -- the regular spawns:
 --   when they appear is defined in the 'timed_spawn' wml array. which is created at prestart
 --   which unit types get spawned is defined in the 'main_spawn' wml array which is also spawned at prestart
-on_event("new turn", function()
+on_event("new turn", function(_)
 	local next_spawn = wml.variables["timed_spawn[0]"]
 	if next_spawn == nil then
 		return
@@ -295,7 +295,7 @@ on_event("new turn", function()
 end)
 
 -- on turn 'final_turn' the first 'final spawn' appears
-on_event("new turn", function()
+on_event("new turn", function(_)
 	if wesnoth.current.turn ~= wml.variables["final_turn"] then
 		return
 	end
@@ -317,7 +317,7 @@ on_event("new turn", function()
 end)
 
 -- after the first final spawn, spawn a new final spawn every 1 or 2 turns.
-on_event("new turn", function()
+on_event("new turn", function(_)
 	if wesnoth.current.turn ~= wml.variables["next_final_spawn"] then
 		return
 	end
@@ -326,7 +326,7 @@ on_event("new turn", function()
 end)
 
 -- The victory condition: win when there are no enemy unit after the first final spawn appeared.
-on_event("die", function()
+on_event("die", function(_)
 	if wesnoth.current.turn < wml.variables["final_turn"] then
 		return
 	end
@@ -349,7 +349,7 @@ on_event("die", function()
 end)
 
 -- initilize the 'fixed_spawn' and 'main_spawn'
-on_event("prestart", function()
+on_event("prestart", function(_)
 	local fixed_spawn = function(x, y, ...)
 		local res = { x = x, y = y }
 		for i,v in ipairs {...} do
@@ -380,7 +380,7 @@ local function get_weather_duration(max_duration)
 	return res
 end
 -- initilize the weather_event wml array which defines at which turns the weather changes.
-on_event("prestart", function()
+on_event("prestart", function(_)
 	local turn = mathx.random(4,6)
 	local event_num = 0
 	local weather_to_dispense = {
@@ -467,7 +467,7 @@ end
 -- initially this was set for every side 3 turns which allowed a cheat to be used by players.
 -- the cheat was activated by setting side 3 as Empty and picking a faction optimised for the default/basic map for side 4.
 -- the result was that the weather change feature never triggered.
-on_event("side 1 turn", function()
+on_event("side 1 turn", function(_)
 	-- get next weather event
 	local weather_event = wml.variables["weather_event[0]"]
 	if weather_event == nil then

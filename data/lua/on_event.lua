@@ -25,6 +25,7 @@ end
 ---@param eventname string The event to handle; can be a comma-separated list
 ---@param priority? number Events execute in order of decreasing priority, and secondarily in order of adding
 ---@param fcn fun(ctx:event_context)
+---@overload fun(eventname:string, fcn:fun(ctx:event_context))
 local function on_event(eventname, priority, fcn)
 	if string.match(eventname, ",") then
 		for _,elem in ipairs((eventname or ""):split()) do

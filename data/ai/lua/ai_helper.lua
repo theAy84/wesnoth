@@ -516,7 +516,7 @@ function ai_helper.split(str, sep)
     sep = sep or ","
     local fields = {}
     local pattern = string.format("([^%s]+)", sep)
-    string.gsub(str, pattern, function(c) fields[#fields+1] = c end)
+    local _ = string.gsub(str, pattern, function(c) fields[#fields+1] = c end)
     return fields
 end
 
@@ -933,10 +933,7 @@ function ai_helper.split_location_list_to_strings(list)
         locsx[i] = loc[1]
         locsy[i] = loc[2]
     end
-    locsx = table.concat(locsx, ",")
-    locsy = table.concat(locsy, ",")
-
-    return locsx, locsy
+    return table.concat(locsx, ","), table.concat(locsy, ",")
 end
 
 function ai_helper.get_avoid_map(ai, avoid_tag, use_ai_aspect, default_avoid_tag)
@@ -1059,7 +1056,7 @@ function ai_helper.get_visible_units(viewing_side, filter)
     table.insert(filter_plus_vision, { "filter_vision", { side = viewing_side, visible = 'yes' } })
 
     local units = {}
-    local all_units = wesnoth.units.find_on_map()
+    local all_units = wesnoth.units.find_on_map{}
     for _,unit in ipairs(all_units) do
         if unit:matches(filter_plus_vision) then
             table.insert(units, unit)
@@ -1121,7 +1118,7 @@ function ai_helper.get_attackable_enemies(filter, side, cfg)
     end
 
     local enemies = {}
-    local all_units = wesnoth.units.find_on_map()
+    local all_units = wesnoth.units.find_on_map{}
     for _,unit in ipairs(all_units) do
         if wesnoth.sides.is_enemy(side, unit.side)
            and (not unit.status.petrified)
@@ -1309,7 +1306,7 @@ function ai_helper.my_moves()
     --   [1] = { dst = { x = 7, y = 16 },
     --           src = { x = 6, y = 16 } }
 
-    local dstsrc = ai.get_dstsrc()
+    local dstsrc = ai.get_dst_src()
 
     local my_moves = {}
     for key,value in pairs(dstsrc) do
@@ -1328,7 +1325,7 @@ function ai_helper.enemy_moves()
     --   [1] = { dst = { x = 7, y = 16 },
     --           src = { x = 6, y = 16 } }
 
-    local dstsrc = ai.get_enemy_dstsrc()
+    local dstsrc = ai.get_enemy_dst_src()
 
     local enemy_moves = {}
     for key,value in pairs(dstsrc) do
@@ -1489,6 +1486,7 @@ function ai_helper.can_reach(unit, x, y, cfg)
     local ignore_visibility = cfg and cfg.ignore_visibility
 
     -- Is there a visible unit at the goal hex?
+    ---@type unit?
     local unit_in_way = wesnoth.units.get(x, y)
     if unit_in_way and (not ignore_visibility) and (not ai_helper.is_visible_unit(viewing_side, unit_in_way)) then
         unit_in_way = nil
@@ -1555,10 +1553,11 @@ function ai_helper.get_reachmap(unit, cfg)
     local initial_reach = wesnoth.paths.find_reach(unit, cfg)
     for _,loc in ipairs(initial_reach) do
         local is_available = true
-        if cfg and cfg.avoid_map and cfg.avoid_map:get(loc[1], loc[2]) then
+        if cfg and cfg.avoid_map and cfg.avoid_map:get(loc) then
             is_available = false
         else
-            local unit_in_way = wesnoth.units.get(loc[1], loc[2])
+            ---@type unit?
+            local unit_in_way = wesnoth.units.get(loc)
             if unit_in_way and (unit_in_way.id == unit.id) then
                 unit_in_way = nil
             end
@@ -1618,7 +1617,7 @@ function ai_helper.find_path_with_shroud(unit, x, y, cfg)
     if wesnoth.sides[viewing_side].shroud then
         local extracted_units = {}
         if (not cfg) or (not cfg.ignore_units) then
-            local all_units = wesnoth.units.find_on_map()
+            local all_units = wesnoth.units.find_on_map{}
             for _,u in ipairs(all_units) do
                 if (u.id ~= unit.id) and (u.side ~= viewing_side)
                     and (not ignore_visibility) and (not ai_helper.is_visible_unit(viewing_side, u))
@@ -1792,7 +1791,7 @@ function ai_helper.find_path_with_avoid(unit, x, y, avoid_map, options)
         return nil, ai_helper.no_path
     end
 
-    local all_units = wesnoth.units.find_on_map()
+    local all_units = wesnoth.units.find_on_map{}
     local ally_map, enemy_map = LS.create(), LS.create()
     for _,u in ipairs(all_units) do
         if (u.id ~= unit.id) and ai_helper.is_visible_unit(wesnoth.current.side, u) then
@@ -2030,7 +2029,7 @@ function ai_helper.get_attacks(units, cfg)
 
     -- Note: the remainder is optimized for speed, so we only get_units once,
     -- do not use WML filters, etc.
-    local all_units = wesnoth.units.find_on_map()
+    local all_units = wesnoth.units.find_on_map{}
 
     local enemy_map, my_unit_map, other_unit_map = LS.create(), LS.create(), LS.create()
     for i,unit in ipairs(all_units) do
@@ -2070,28 +2069,28 @@ function ai_helper.get_attacks(units, cfg)
     for _,unit in ipairs(units) do
         wesnoth.interface.handle_user_interact()
         local reach
-        if reaches:get(unit.x, unit.y) then
-            reach = reaches:get(unit.x, unit.y)
+        if reaches:get(unit) then
+            reach = reaches:get(unit)
         else
             reach = wesnoth.paths.find_reach(unit, cfg)
-            reaches:insert(unit.x, unit.y, reach)
+            reaches:insert(unit, reach)
         end
 
         for _,loc in ipairs(reach) do
-            if attack_hex_map:get(loc[1], loc[2]) then
+            if attack_hex_map:get(loc) then
                 local add_target = true
                 local attack_hex_occupied = false
 
                 -- If another unit of same side is on this hex:
-                if my_unit_map:get(loc[1], loc[2]) and ((loc[1] ~= unit.x) or (loc[2] ~= unit.y)) then
+                if my_unit_map:get(loc) and ((loc.x ~= unit.x) or (loc.y ~= unit.y)) then
                     attack_hex_occupied = true
                     add_target = false
 
                     if cfg.include_occupied then -- Test whether it can move out of the way
-                        local unit_in_way = all_units[my_unit_map:get(loc[1], loc[2])]
+                        local unit_in_way = all_units[my_unit_map:get(loc)]
                         local uiw_reach
-                        if reaches:get(unit_in_way.x, unit_in_way.y) then
-                            uiw_reach = reaches:get(unit_in_way.x, unit_in_way.y)
+                        if reaches:get(unit_in_way) then
+                            uiw_reach = reaches:get(unit_in_way)
                         else
                             uiw_reach = wesnoth.paths.find_reach(unit_in_way, cfg)
                             reaches:insert(unit_in_way.x, unit_in_way.y, uiw_reach)
@@ -2114,7 +2113,7 @@ function ai_helper.get_attacks(units, cfg)
                 end
 
                 if add_target then
-                    for _,target in ipairs(attack_hex_map:get(loc[1], loc[2])) do
+                    for _,target in ipairs(attack_hex_map:get(loc)) do
                         local att_stats, def_stats
                         if cfg.simulate_combat then
                             local unit_dst = unit:clone()

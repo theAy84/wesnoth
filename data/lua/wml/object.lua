@@ -25,9 +25,9 @@ function wml_actions.object(cfg)
 
 	-- If a unit matches the filter, proceed
 	if unit then
-		text = tostring(cfg.description or "")
+		text = cfg.description or ""
 	else
-		text = tostring(cfg.cannot_use_message or "")
+		text = cfg.cannot_use_message or ""
 		command_type = "else"
 	end
 
@@ -61,7 +61,7 @@ function wml_actions.object(cfg)
 
 	if not silent then
 		wml_actions.redraw{}
-		local name = tostring(cfg.name or "")
+		local name = cfg.name or ""
 		gui.show_popup(name, text, cfg.image)
 	end
 

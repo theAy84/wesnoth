@@ -123,7 +123,7 @@ end
 function wct_map_yard(directions, counter_directions)
 	-- todo: is this code 'symmetric' andin the sense that switching
 	--       directions and counter_directions  doesn't change anythign at all?
-	local terrain_to_change = map:find(f.all(
+	local terrain_to_change = map:find(wesnoth.map.filter(f.all(
 		f.terrain("Gg"),
 		f.adjacent(f.terrain("Gg"), directions, 3),
 		f.any(
@@ -133,7 +133,7 @@ function wct_map_yard(directions, counter_directions)
 				f.adjacent(f.terrain("Gg^Vl"))
 			), directions, nil)
 		)
-	))
+	)))
 
 	if #terrain_to_change > 0 then
 		local loc = terrain_to_change[mathx.random(#terrain_to_change)]

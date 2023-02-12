@@ -42,6 +42,7 @@ function ca_protect_unit_move:execution(cfg, data)
         if (unit.id == u.id) then goal = AH.get_named_loc_xy('goal', u) end
     end
 
+    ---@type location_set
     local reach_map = AH.get_reachable_unocc(unit)
 
     local terrain_defense_map = LS.create()

@@ -6,8 +6,8 @@ local T = wml.tag
 wesnoth.game_events.add{
 	name = "die",
 	filter = {
-		unit = { wml.tag['not']{ status = "unplagueable" } },
-		second_unit = { ability = "feeding" },
+		second_unit = { wml.tag['not']{ status = "unplagueable" } },
+		unit = { ability = "feeding" },
 	},
 	action = function()
 		local ec = wesnoth.current.event_context

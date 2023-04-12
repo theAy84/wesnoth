@@ -4057,7 +4057,7 @@ msgid ""
 "I do not think I could bear your death. Still less could I bear the "
 "corruption of your soul; the grief would ruin me."
 msgstr ""
-"Ich glaube nicht, dass ich deinen Tod ertrage würde. Noch weniger deine "
+"Ich glaube nicht, dass ich deinen Tod ertragen würde. Noch weniger deine "
 "Seelenpein, der Schmerz würde mich zerreißen."
 
 #. [part]
